@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
+	"github.com/ramonmacias/go-auth-middleware/api"
 	"github.com/ramonmacias/go-auth-middleware/auth"
 )
 
@@ -23,19 +24,18 @@ func AuthAPI(provider auth.Provider, fn ValidForRefresh) mux.MiddlewareFunc {
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			bearerToken := getBearerToken(req)
 			if bearerToken == "" {
-				w.WriteHeader(http.StatusUnauthorized)
+				api.UnauthorizedError.WriteResponse(w)
 				return
 			}
 			session, err := provider.Validate(bearerToken)
 			if err != nil {
 				if errors.Is(err, auth.ErrTokenExpired) {
 					if err := fn(session); err != nil {
-						// TODO we should create our custom API errors
-						w.WriteHeader(http.StatusUnauthorized)
+						api.RefreshTokenError.WriteResponse(w)
 						return
 					}
 				}
-				w.WriteHeader(http.StatusForbidden)
+				api.ForbiddenError.WriteResponse(w)
 				return
 			}
 			next.ServeHTTP(w, RequestWithSessionContext(req, session))
