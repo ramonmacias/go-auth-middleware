@@ -18,7 +18,7 @@ type ValidForRefresh func(userSession *auth.Session) error
 
 // AuthAPI is the middleware that will check for the authorization header
 // and apply all the validations needed to let the user let in or answer back
-// with the correct Unauthorized errors
+// with the correct Unauthorized errors, the ValidForRefresh function is mandatory
 func AuthAPI(provider auth.Provider, fn ValidForRefresh) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
