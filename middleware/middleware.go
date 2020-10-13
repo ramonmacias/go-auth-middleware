@@ -30,7 +30,7 @@ func AuthAPI(provider auth.Provider, fn ValidForRefresh) mux.MiddlewareFunc {
 			session, err := provider.Validate(bearerToken)
 			if err != nil {
 				if errors.Is(err, auth.ErrTokenExpired) {
-					if err := fn(session); err != nil {
+					if err := fn(session); err == nil {
 						api.RefreshTokenError.WriteResponse(w)
 						return
 					}
@@ -40,6 +40,37 @@ func AuthAPI(provider auth.Provider, fn ValidForRefresh) mux.MiddlewareFunc {
 			}
 			next.ServeHTTP(w, RequestWithSessionContext(req, session))
 			return
+		})
+	}
+}
+
+// CookieAPI is the middleware that will check for the validness of the given token
+// on the given cookie, this middleware will answer back with a valid refreshed token,
+// expiring the token if needed or with the same cookie in the valid case.
+func CookieAPI(provider auth.Provider, fn ValidForRefresh, cookieService auth.CookieService) mux.MiddlewareFunc {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			cookie, err := req.Cookie("bearer-token")
+			if err != nil {
+				api.ForbiddenError.WriteResponse(w)
+				return
+			}
+			session, err := provider.Validate(cookie.Value)
+			if err != nil {
+				if errors.Is(err, auth.ErrTokenExpired) {
+					if err := fn(session); err == nil {
+						token, err := provider.Refresh(cookie.Value)
+						if err != nil {
+							cookieService.Set(w, auth.ExpiredCookie())
+							return
+						}
+						cookieService.Set(w, auth.Cookie(token))
+						return
+					}
+				}
+				cookieService.Set(w, auth.ExpiredCookie())
+				return
+			}
 		})
 	}
 }
