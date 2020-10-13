@@ -96,9 +96,9 @@ func (j *jwtProvider) decodeAndValidateClaims(signedClaims string) (*jwt.Claims,
 	if err != nil {
 		// Check if is an expired error
 		if err.Error() == "failed to validate exp: token has expired" {
-			return nil, ErrTokenExpired
+			return claims, ErrTokenExpired
 		}
-		return nil, err
+		return claims, err
 	}
 	return claims, nil
 }
