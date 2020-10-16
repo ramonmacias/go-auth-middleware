@@ -65,12 +65,15 @@ func CookieAPI(provider auth.Provider, fn ValidForRefresh, cookieService auth.Co
 							return
 						}
 						cookieService.Set(w, auth.Cookie(token))
+						next.ServeHTTP(w, RequestWithSessionContext(req, session))
 						return
 					}
 				}
 				cookieService.Set(w, auth.ExpiredCookie())
 				return
 			}
+			next.ServeHTTP(w, RequestWithSessionContext(req, session))
+			return
 		})
 	}
 }
