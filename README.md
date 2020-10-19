@@ -35,11 +35,32 @@ router.HandleFunc("/", sampleHandler)
 router.Use(middleware.AuthAPI(authProvider, middleware.ValidForRefresh()))
 ```
 
-Then your sampleHandler should be something likes this:
+Then your sampleHandler should be something like this:
 
 ```
 func sampleHandler(wr http.ResponseWriter, r *http.Request) {
   session := middleware.GetSessionFromContext(r)
   // Add here the rest of the handler logic
 }
+```
 
+### Cookie based
+
+The Cookie based approach is working similar to the Authorization header, but the main difference is that we use a cookie for transport the token between the client and the server. On this case we need use a cookie named **bearer-token** and inside the cookie value we should have our token. Once the request reach our middleware we will validate the token inside the cookie, in case the token is expired and we are able to refresh it, we will do it and we are going to update the token in the cookie so we can keep the session alive, in case the token is not valid we will expire the cookie, so the client need to ask for a new cookie (login). If the token is valid then the request will reach the final hanlder keeping the session on the request context.
+
+In order to add this middleware on your routing:
+
+```
+router := mux.NewRouter()
+router.HandleFunc("/", sampleHandler)
+router.Use(middleware.AuthCookieAPI(authProvider, middleware.ValidForRefresh()))
+```
+
+Then your sampleHandler should be something like this:
+
+```
+func sampleHandler(wr http.ResponseWriter, r *http.Request) {
+  session := middleware.GetSessionFromContext(r)
+  // Add here the rest of the handler logic
+}
+```
