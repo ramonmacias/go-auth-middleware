@@ -2,7 +2,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/ramonmacias/go-auth-middleware)](https://goreportcard.com/report/github.com/ramonmacias/go-auth-middleware) [![GoDoc](https://godoc.org/github.com/ramonmacias/go-auth-middleware?status.svg)](https://godoc.org/github.com/ramonmacias/go-auth-middleware)
 
 
-The aim of this project is to provide a way of implement an http middleware for authenticate http requests, using the Bearer token as a source of truth.
+The aim of this project is to provide a way of implement an http middleware for authenticate http requests, using the Bearer token as a source of truth. Blog https://ramonmacias.github.io/2020/10/19/auth-middleware-in-go/
 
 ## Packages
 
